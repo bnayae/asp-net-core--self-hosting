@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WinServiceHost
@@ -15,6 +16,8 @@ namespace WinServiceHost
     public partial class Host : ServiceBase
     {
         private const string URL = "http://localhost:5002";
+        private bool _consoleMode;
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         private static IWebHost BuildWebHost(string[] args)
         {
@@ -34,6 +37,7 @@ namespace WinServiceHost
 
         internal void RunAsConsole(string[] args)
         {
+            _consoleMode = true;
             OnStart(args);
             OnStop();
             Dispose();
@@ -41,12 +45,27 @@ namespace WinServiceHost
 
         protected override void OnStart(string[] args)
         {
-            _host = BuildWebHost(args);
-            _host.Run();
+            try
+            {
+                //EventLog.WriteEvent("Self-Hosting", new EventInstance(0, 0, EventLogEntryType.Information), new string[] { "Service start successfully." });
+                _host = BuildWebHost(args);
+                if (_consoleMode)
+                    _host.Run();
+                else
+                {
+                    Task _ = _host.RunAsync(cancellationTokenSource.Token);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                //EventLog.WriteEvent("Self-Hosting", new EventInstance(0, 0, EventLogEntryType.Error), new string[] { "Service failed at startup." });
+            }
         }
 
         protected override void OnStop()
         {
+            cancellationTokenSource.Cancel();
             _host.Dispose();
             _host = null;
         }

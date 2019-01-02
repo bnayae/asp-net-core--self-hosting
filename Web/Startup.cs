@@ -39,11 +39,11 @@ namespace Web
             else
             {
                 app.UseHsts();
-                app.UseExceptionHandler("/Error");
+                //app.UseExceptionHandler("/Error");
             }
 
             //app.UseStaticFiles();
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
