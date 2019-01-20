@@ -15,16 +15,17 @@ namespace WinServiceHost
 {
     public partial class Host : ServiceBase
     {
-        private const string URL = "http://localhost:5002";
+        private readonly static string[] URLS = { "http://localhost:5002", "http://0.0.0.0:5002" };
         private bool _consoleMode;
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         private static IWebHost BuildWebHost(string[] args)
         {
-            var host = WebHost.CreateDefaultBuilder(args).UseUrls(URL)
-                   .UseStartup<Web.Startup>()
-                   //.UseStartup<Startup>()
-                   .Build();
+            var host = WebHost.CreateDefaultBuilder(args)
+                    .UseUrls(URLS)
+                    .UseStartup<Web.Startup>()
+                    //.UseStartup<Startup>()
+                    .Build();
             return host;
         }
 
